@@ -11,6 +11,9 @@
 #import "AVAssetTrackUtils.h"
 #import "messages.g.h"
 
+#import <MobileCoreServices/MobileCoreServices.h>
+#import "VideoPlayerCache.h"
+
 #if !__has_feature(objc_arc)
 #error Code Requires ARC.
 #endif
@@ -60,11 +63,13 @@
 @property(nonatomic, readonly) BOOL disposed;
 @property(nonatomic, readonly) BOOL isPlaying;
 @property(nonatomic) BOOL isLooping;
+@property(nonatomic, strong) ResourceLoaderManager *resourceLoaderManager;
 @property(nonatomic, readonly) BOOL isInitialized;
 - (instancetype)initWithURL:(NSURL *)url
                frameUpdater:(FLTFrameUpdater *)frameUpdater
                 httpHeaders:(nonnull NSDictionary<NSString *, NSString *> *)headers
-              playerFactory:(id<FVPPlayerFactory>)playerFactory;
+              playerFactory:(id<FVPPlayerFactory>)playerFactory
+                enableCache:(NSNumber *)cacheEnabled;
 @end
 
 static void *timeRangeContext = &timeRangeContext;
@@ -72,19 +77,19 @@ static void *statusContext = &statusContext;
 static void *presentationSizeContext = &presentationSizeContext;
 static void *durationContext = &durationContext;
 static void *playbackLikelyToKeepUpContext = &playbackLikelyToKeepUpContext;
-static void *playbackBufferEmptyContext = &playbackBufferEmptyContext;
-static void *playbackBufferFullContext = &playbackBufferFullContext;
 static void *rateContext = &rateContext;
 
 @implementation FLTVideoPlayer
 - (instancetype)initWithAsset:(NSString *)asset
                  frameUpdater:(FLTFrameUpdater *)frameUpdater
-                playerFactory:(id<FVPPlayerFactory>)playerFactory {
+                playerFactory:(id<FVPPlayerFactory>)playerFactory
+                  enableCache:(NSNumber *)enable {
   NSString *path = [[NSBundle mainBundle] pathForResource:asset ofType:nil];
   return [self initWithURL:[NSURL fileURLWithPath:path]
               frameUpdater:frameUpdater
                httpHeaders:@{}
-             playerFactory:playerFactory];
+             playerFactory:playerFactory
+               enableCache:false];
 }
 
 - (void)addObserversForItem:(AVPlayerItem *)item player:(AVPlayer *)player {
@@ -108,14 +113,6 @@ static void *rateContext = &rateContext;
          forKeyPath:@"playbackLikelyToKeepUp"
             options:NSKeyValueObservingOptionInitial | NSKeyValueObservingOptionNew
             context:playbackLikelyToKeepUpContext];
-  [item addObserver:self
-         forKeyPath:@"playbackBufferEmpty"
-            options:NSKeyValueObservingOptionInitial | NSKeyValueObservingOptionNew
-            context:playbackBufferEmptyContext];
-  [item addObserver:self
-         forKeyPath:@"playbackBufferFull"
-            options:NSKeyValueObservingOptionInitial | NSKeyValueObservingOptionNew
-            context:playbackBufferFullContext];
 
   // Add observer to AVPlayer instead of AVPlayerItem since the AVPlayerItem does not have a "rate"
   // property
@@ -221,14 +218,32 @@ NS_INLINE UIViewController *rootViewController(void) {
 - (instancetype)initWithURL:(NSURL *)url
                frameUpdater:(FLTFrameUpdater *)frameUpdater
                 httpHeaders:(nonnull NSDictionary<NSString *, NSString *> *)headers
-              playerFactory:(id<FVPPlayerFactory>)playerFactory {
+              playerFactory:(id<FVPPlayerFactory>)playerFactory
+                enableCache:(NSNumber *)cacheEnabled {
   NSDictionary<NSString *, id> *options = nil;
   if ([headers count] != 0) {
     options = @{@"AVURLAssetHTTPHeaderFieldsKey" : headers};
   }
-  AVURLAsset *urlAsset = [AVURLAsset URLAssetWithURL:url options:options];
-  AVPlayerItem *item = [AVPlayerItem playerItemWithAsset:urlAsset];
+  AVPlayerItem *item;
+  if (cacheEnabled.boolValue) {
+    NSLog(@"cache enabled %@", url);
+    ResourceLoaderManager *resourceLoaderManager = [ResourceLoaderManager new];
+    self.resourceLoaderManager = resourceLoaderManager;
+    item = [resourceLoaderManager playerItemWithURL:url];
+  } else {
+    AVURLAsset *urlAsset = [AVURLAsset URLAssetWithURL:url options:options];
+    item = [AVPlayerItem playerItemWithAsset:urlAsset];
+  }
+
   return [self initWithPlayerItem:item frameUpdater:frameUpdater playerFactory:playerFactory];
+}
+
+- (void)string:(NSMutableString *)string
+    appendString:(NSString *)appendString
+            muti:(NSInteger)muti {
+  for (NSInteger i = 0; i < muti; i++) {
+    [string appendString:appendString];
+  }
 }
 
 - (instancetype)initWithPlayerItem:(AVPlayerItem *)item
@@ -330,19 +345,15 @@ NS_INLINE UIViewController *rootViewController(void) {
       [self updatePlayingState];
     }
   } else if (context == playbackLikelyToKeepUpContext) {
+    [self updatePlayingState];
     if ([[_player currentItem] isPlaybackLikelyToKeepUp]) {
-      [self updatePlayingState];
       if (_eventSink != nil) {
         _eventSink(@{@"event" : @"bufferingEnd"});
       }
-    }
-  } else if (context == playbackBufferEmptyContext) {
-    if (_eventSink != nil) {
-      _eventSink(@{@"event" : @"bufferingStart"});
-    }
-  } else if (context == playbackBufferFullContext) {
-    if (_eventSink != nil) {
-      _eventSink(@{@"event" : @"bufferingEnd"});
+    } else {
+      if (_eventSink != nil) {
+        _eventSink(@{@"event" : @"bufferingStart"});
+      }
     }
   } else if (context == rateContext) {
     // Important: Make sure to cast the object to AVPlayer when observing the rate property,
@@ -519,6 +530,14 @@ NS_INLINE UIViewController *rootViewController(void) {
 /// is useful for the case where the Engine is in the process of deconstruction
 /// so the channel is going to die or is already dead.
 - (void)disposeSansEventChannel {
+  // This check prevents the crash caused by removing the KVO observers twice.
+  // When performing a Hot Restart, the leftover players are disposed once directly
+  // by [FLTVideoPlayerPlugin initialize:] method and then disposed again by
+  // [FLTVideoPlayer onTextureUnregistered:] call leading to possible over-release.
+  if (_disposed) {
+    return;
+  }
+
   _disposed = YES;
   [_playerLayer removeFromSuperlayer];
   [_displayLink invalidate];
@@ -528,8 +547,7 @@ NS_INLINE UIViewController *rootViewController(void) {
   [currentItem removeObserver:self forKeyPath:@"presentationSize"];
   [currentItem removeObserver:self forKeyPath:@"duration"];
   [currentItem removeObserver:self forKeyPath:@"playbackLikelyToKeepUp"];
-  [currentItem removeObserver:self forKeyPath:@"playbackBufferEmpty"];
-  [currentItem removeObserver:self forKeyPath:@"playbackBufferFull"];
+  [self.player removeObserver:self forKeyPath:@"rate"];
 
   [self.player replaceCurrentItemWithPlayerItem:nil];
   [[NSNotificationCenter defaultCenter] removeObserver:self];
@@ -620,19 +638,53 @@ NS_INLINE UIViewController *rootViewController(void) {
     } else {
       assetPath = [_registrar lookupKeyForAsset:input.asset];
     }
-    player = [[FLTVideoPlayer alloc] initWithAsset:assetPath
-                                      frameUpdater:frameUpdater
-                                     playerFactory:_playerFactory];
-    return [self onPlayerSetup:player frameUpdater:frameUpdater];
+    @try {
+      player = [[FLTVideoPlayer alloc] initWithAsset:assetPath
+                                        frameUpdater:frameUpdater
+                                       playerFactory:_playerFactory
+                                         enableCache:false];
+      return [self onPlayerSetup:player frameUpdater:frameUpdater];
+    } @catch (NSException *exception) {
+      *error = [FlutterError errorWithCode:@"video_player" message:exception.reason details:nil];
+      return nil;
+    }
   } else if (input.uri) {
+    BOOL isCacheSupported = NO;
+    if (input.enableCache.boolValue) {
+      isCacheSupported = [self isCacheSupported:input.uri];
+    }
+    BOOL enableCache = input.enableCache.boolValue ? isCacheSupported : NO;
     player = [[FLTVideoPlayer alloc] initWithURL:[NSURL URLWithString:input.uri]
                                     frameUpdater:frameUpdater
                                      httpHeaders:input.httpHeaders
-                                   playerFactory:_playerFactory];
+                                   playerFactory:_playerFactory
+                                     enableCache:[NSNumber numberWithBool:enableCache]];
     return [self onPlayerSetup:player frameUpdater:frameUpdater];
   } else {
     *error = [FlutterError errorWithCode:@"video_player" message:@"not implemented" details:nil];
     return nil;
+  }
+}
+
+- (NSString *)mimeTypeForFileAtPath:(NSString *)path {
+  NSString *fileExtension = [path pathExtension];
+  NSString *UTI = (__bridge_transfer NSString *)UTTypeCreatePreferredIdentifierForTag(
+      kUTTagClassFilenameExtension, (__bridge CFStringRef)fileExtension, NULL);
+  NSString *contentType = (__bridge_transfer NSString *)UTTypeCopyPreferredTagWithClass(
+      (__bridge CFStringRef)UTI, kUTTagClassMIMEType);
+  if (!contentType) {
+    return @"application/octet-stream";
+  }
+  return contentType;
+}
+
+- (BOOL)isCacheSupported:(NSString *)path {
+  NSString *mimeType = [self mimeTypeForFileAtPath:path];
+  NSArray *supportedMimetypes = @[ @"video/mp4", @"audio/flac" ];
+  if ([supportedMimetypes containsObject:mimeType]) {
+    return YES;
+  } else {
+    return NO;
   }
 }
 
@@ -663,6 +715,20 @@ NS_INLINE UIViewController *rootViewController(void) {
   player.isLooping = input.isLooping.boolValue;
 }
 
+- (void)clearCache:(FLTClearCacheMessage *)input error:(FlutterError **)error {
+  FLTVideoPlayer *player = self.playersByTextureId[input.textureId];
+  NSLog(@"Clean cache");
+  [player.resourceLoaderManager cleanCache];
+  //    unsigned long long fileSize = [CacheManager calculateCachedSizeWithError:nil];
+  //    NSLog(@"file cache size: %@", @(fileSize));
+  NSError *error2;
+  [CacheManager cleanAllCacheWithError:&error2];
+  if (error2) {
+    NSLog(@"clean cache failure: %@", error2);
+  }
+  [CacheManager cleanAllCacheWithError:&error2];
+}
+
 - (void)setVolume:(FLTVolumeMessage *)input error:(FlutterError **)error {
   FLTVideoPlayer *player = self.playersByTextureId[input.textureId];
   [player setVolume:input.volume.doubleValue];
@@ -682,6 +748,14 @@ NS_INLINE UIViewController *rootViewController(void) {
   FLTVideoPlayer *player = self.playersByTextureId[input.textureId];
   FLTPositionMessage *result = [FLTPositionMessage makeWithTextureId:input.textureId
                                                             position:@([player position])];
+  return result;
+}
+
+- (FLTIsSupportedMessage *)isCacheSupportedForNetworkMedia:(FLTIsCacheSupportedMessage *)msg
+                                                     error:(FlutterError **)error {
+  BOOL isSupported = [self isCacheSupported:msg.url];
+  FLTIsSupportedMessage *result =
+      [FLTIsSupportedMessage makeWithIsSupported:[NSNumber numberWithBool:isSupported]];
   return result;
 }
 

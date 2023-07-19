@@ -342,10 +342,10 @@ typedef NS_ENUM(NSUInteger, FWFWKMediaCaptureType) {
 - (instancetype)init NS_UNAVAILABLE;
 + (instancetype)makeWithCode:(NSNumber *)code
                       domain:(NSString *)domain
-        localizedDescription:(NSString *)localizedDescription;
+                    userInfo:(nullable NSDictionary<NSString *, id> *)userInfo;
 @property(nonatomic, strong) NSNumber *code;
 @property(nonatomic, copy) NSString *domain;
-@property(nonatomic, copy) NSString *localizedDescription;
+@property(nonatomic, strong, nullable) NSDictionary<NSString *, id> *userInfo;
 @end
 
 /// Mirror of WKScriptMessage.
@@ -751,6 +751,9 @@ NSObject<FlutterMessageCodec> *FWFWKWebViewHostApiGetCodec(void);
                                   javaScriptString:(NSString *)javaScriptString
                                         completion:(void (^)(id _Nullable,
                                                              FlutterError *_Nullable))completion;
+- (void)setInspectableForWebViewWithIdentifier:(NSNumber *)identifier
+                                   inspectable:(NSNumber *)inspectable
+                                         error:(FlutterError *_Nullable *_Nonnull)error;
 @end
 
 extern void FWFWKWebViewHostApiSetup(id<FlutterBinaryMessenger> binaryMessenger,
