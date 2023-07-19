@@ -455,11 +455,11 @@ static id GetNullableObjectAtIndex(NSArray *array, NSInteger key) {
 @implementation FWFNSErrorData
 + (instancetype)makeWithCode:(NSNumber *)code
                       domain:(NSString *)domain
-        localizedDescription:(NSString *)localizedDescription {
+                    userInfo:(nullable NSDictionary<NSString *, id> *)userInfo {
   FWFNSErrorData *pigeonResult = [[FWFNSErrorData alloc] init];
   pigeonResult.code = code;
   pigeonResult.domain = domain;
-  pigeonResult.localizedDescription = localizedDescription;
+  pigeonResult.userInfo = userInfo;
   return pigeonResult;
 }
 + (FWFNSErrorData *)fromList:(NSArray *)list {
@@ -468,8 +468,7 @@ static id GetNullableObjectAtIndex(NSArray *array, NSInteger key) {
   NSAssert(pigeonResult.code != nil, @"");
   pigeonResult.domain = GetNullableObjectAtIndex(list, 1);
   NSAssert(pigeonResult.domain != nil, @"");
-  pigeonResult.localizedDescription = GetNullableObjectAtIndex(list, 2);
-  NSAssert(pigeonResult.localizedDescription != nil, @"");
+  pigeonResult.userInfo = GetNullableObjectAtIndex(list, 2);
   return pigeonResult;
 }
 + (nullable FWFNSErrorData *)nullableFromList:(NSArray *)list {
@@ -479,7 +478,7 @@ static id GetNullableObjectAtIndex(NSArray *array, NSInteger key) {
   return @[
     (self.code ?: [NSNull null]),
     (self.domain ?: [NSNull null]),
-    (self.localizedDescription ?: [NSNull null]),
+    (self.userInfo ?: [NSNull null]),
   ];
 }
 @end
@@ -2476,6 +2475,31 @@ void FWFWKWebViewHostApiSetup(id<FlutterBinaryMessenger> binaryMessenger,
                                                           FlutterError *_Nullable error) {
                                                callback(wrapResult(output, error));
                                              }];
+      }];
+    } else {
+      [channel setMessageHandler:nil];
+    }
+  }
+  {
+    FlutterBasicMessageChannel *channel = [[FlutterBasicMessageChannel alloc]
+           initWithName:@"dev.flutter.pigeon.WKWebViewHostApi.setInspectable"
+        binaryMessenger:binaryMessenger
+                  codec:FWFWKWebViewHostApiGetCodec()];
+    if (api) {
+      NSCAssert([api respondsToSelector:@selector(setInspectableForWebViewWithIdentifier:
+                                                                             inspectable:error:)],
+                @"FWFWKWebViewHostApi api (%@) doesn't respond to "
+                @"@selector(setInspectableForWebViewWithIdentifier:inspectable:error:)",
+                api);
+      [channel setMessageHandler:^(id _Nullable message, FlutterReply callback) {
+        NSArray *args = message;
+        NSNumber *arg_identifier = GetNullableObjectAtIndex(args, 0);
+        NSNumber *arg_inspectable = GetNullableObjectAtIndex(args, 1);
+        FlutterError *error;
+        [api setInspectableForWebViewWithIdentifier:arg_identifier
+                                        inspectable:arg_inspectable
+                                              error:&error];
+        callback(wrapResult(nil, error));
       }];
     } else {
       [channel setMessageHandler:nil];
