@@ -25,4 +25,8 @@ static NSString *kByteRangeAccessSupported = @"kByteRangeAccessSupported";
   return self;
 }
 
++ (BOOL)supportsSecureCoding {
+    return YES;
+}
+
 @end

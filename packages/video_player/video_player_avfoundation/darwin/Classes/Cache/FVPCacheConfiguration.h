@@ -9,7 +9,7 @@
  * The caching configuration keeps track of information related to the cache and content download
  * statistics. This Configuration can be stored,updated and retrieved.
  */
-@interface FVPCacheConfiguration : NSObject <NSCopying>
+@interface FVPCacheConfiguration : NSObject <NSCopying, NSSecureCoding>
 
 /**
  * Returns a CacheConfiguration based on the provided url.
@@ -78,5 +78,10 @@
  * download statistics for the content.
  */
 - (void)addDownloadedBytes:(long long)bytes spent:(NSTimeInterval)time;
+
+/**
+  * Count the number of pending save request
+ */
+@property (nonatomic, assign) int pendingSaveCount;
 
 @end

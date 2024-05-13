@@ -32,7 +32,7 @@ access is supported.
 *
 * @see NSCoding
 */
-@interface FVPContentInfo : NSObject <NSCoding>
+@interface FVPContentInfo : NSObject <NSSecureCoding>
 
 /**
  * @property contentType

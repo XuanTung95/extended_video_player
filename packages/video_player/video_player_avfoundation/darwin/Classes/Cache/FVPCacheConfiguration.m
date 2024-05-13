@@ -10,8 +10,9 @@ static NSString *kCacheFragmentsKey = @"kCacheFragmentsKey";
 static NSString *kDownloadInfoKey = @"kDownloadInfoKey";
 static NSString *kContentInfoKey = @"kContentInfoKey";
 static NSString *kURLKey = @"kURLKey";
+static int kSavePendingSeconds = 2;
 
-@interface FVPCacheConfiguration () <NSCoding>
+@interface FVPCacheConfiguration () <NSSecureCoding>
 
 @property(nonatomic, copy) NSString *filePath;
 @property(nonatomic, copy) NSString *fileName;
@@ -25,14 +26,24 @@ static NSString *kURLKey = @"kURLKey";
 // Returns configuration or error.
 + (instancetype)configurationWithFilePath:(NSString *)filePath error:(NSError **)error {
   // FilePath for the cache configuration filepath.
-  filePath = [filePath stringByAppendingPathExtension:@".cache_configuration"];
+  filePath = [filePath stringByAppendingPathExtension:@"cache_configuration"];
 
   // Get the cache confguration.
   NSData *data = [NSData dataWithContentsOfFile:filePath];
+  NSSet *allowedClasses = [NSSet setWithObjects:[FVPCacheConfiguration class],
+                         [NSString class],
+                         [NSURL class],
+                         [NSArray class],
+                         [NSValue class],
+                         [NSNumber class],
+                         [FVPContentInfo class],
+                         nil];
   FVPCacheConfiguration *configuration =
-      [NSKeyedUnarchiver unarchivedObjectOfClass:[FVPCacheConfiguration class]
-                                        fromData:data
-                                           error:error];
+      [NSKeyedUnarchiver unarchivedObjectOfClasses:allowedClasses
+          fromData:data error:error];
+  if (*error) {
+      NSLog(@"Error unarchiving cache configuration: %@", *error);
+  }
   // If there is no cache confguration, create a new one.
   if (!configuration) {
     configuration = [[FVPCacheConfiguration alloc] init];
@@ -88,8 +99,13 @@ static NSString *kURLKey = @"kURLKey";
     _downloadInfo = [aDecoder decodeObjectForKey:kDownloadInfoKey];
     _contentInfo = [aDecoder decodeObjectForKey:kContentInfoKey];
     _url = [aDecoder decodeObjectForKey:kURLKey];
+    _pendingSaveCount = 0;
   }
   return self;
+}
+
++ (BOOL)supportsSecureCoding {
+    return YES;
 }
 
 #pragma mark - NSCopying
@@ -102,6 +118,7 @@ static NSString *kURLKey = @"kURLKey";
   configuration.downloadInfo = self.downloadInfo;
   configuration.url = self.url;
   configuration.contentInfo = self.contentInfo;
+  configuration.pendingSaveCount = 0;
 
   return configuration;
 }
@@ -110,10 +127,23 @@ static NSString *kURLKey = @"kURLKey";
 
 // Save the cache configuration, but cancel "in progress" save.
 - (void)save {
-  [[self class] cancelPreviousPerformRequestsWithTarget:self
-                                               selector:@selector(archiveData)
-                                                 object:nil];
-  [self performSelector:@selector(archiveData) withObject:nil afterDelay:1.0];
+  if (self.pendingSaveCount > 0) {
+    // If saving is in progress, return without initiating another save operation
+    self.pendingSaveCount++;
+    return;
+  }
+  self.pendingSaveCount = 1;
+  [self archiveData];
+  dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(kSavePendingSeconds * NSEC_PER_SEC)),
+                        dispatch_get_main_queue(), ^{
+        if (self) {
+            BOOL run = self.pendingSaveCount > 1;
+            self.pendingSaveCount = 0;
+            if (run) {
+                [self archiveData];
+            }
+        }
+    });
 }
 
 // Save action, or print error.
