@@ -1,3 +1,17 @@
+## NEXT
+
+* Updates minimum supported SDK version to Flutter 3.16/Dart 3.2.
+
+## 3.1.1
+
+* Implements `launchUrl`.
+* Simplifies method channel interface by removing unused elements.
+* Updates minimum supported SDK version to Flutter 3.10/Dart 3.0.
+
+## 3.1.0
+
+* Implements `supportsMode` and `supportsCloseForMode`.
+
 ## 3.0.6
 
 * Adds pub topics to package metadata.

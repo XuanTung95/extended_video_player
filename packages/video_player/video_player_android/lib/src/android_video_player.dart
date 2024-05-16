@@ -45,21 +45,17 @@ class AndroidVideoPlayer extends VideoPlayerPlatform {
       case DataSourceType.asset:
         asset = dataSource.asset;
         packageName = dataSource.package;
-        break;
       case DataSourceType.network:
         uri = dataSource.uri;
         maxCacheSize = videoPlayerParameters?.videoPlayerOptions?.maxCacheSize;
         maxFileSize = videoPlayerParameters?.videoPlayerOptions?.maxFileSize;
         formatHint = _videoFormatStringMap[dataSource.formatHint];
         httpHeaders = dataSource.httpHeaders;
-        break;
       case DataSourceType.file:
         uri = dataSource.uri;
         httpHeaders = dataSource.httpHeaders;
-        break;
       case DataSourceType.contentUri:
         uri = dataSource.uri;
-        break;
     }
     final CreateMessage message = CreateMessage(
       asset: asset,

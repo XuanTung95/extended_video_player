@@ -7,26 +7,31 @@ package io.flutter.plugins.videoplayer;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
-import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 import android.content.Context;
 import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.upstream.DataSource;
+import android.graphics.SurfaceTexture;
+import com.google.android.exoplayer2.ExoPlayer;
+import com.google.android.exoplayer2.Format;
+import com.google.android.exoplayer2.PlaybackException;
+import com.google.android.exoplayer2.Player;
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSource;
 import com.google.android.exoplayer2.upstream.cache.SimpleCache;
 import io.flutter.plugin.common.EventChannel;
 import io.flutter.view.TextureRegistry;
 import java.io.File;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import org.junit.Before;
 import org.junit.Test;
@@ -43,6 +48,7 @@ public class VideoPlayerTest {
   private ExoPlayer fakeExoPlayer;
   private EventChannel fakeEventChannel;
   private TextureRegistry.SurfaceTextureEntry fakeSurfaceTextureEntry;
+  private SurfaceTexture fakeSurfaceTexture;
   private VideoPlayerOptions fakeVideoPlayerOptions;
   private VideoPlayerOptions fakeVideoPlayerOptionsWitchCache;
   private QueuingEventSink fakeEventSink;
@@ -66,6 +72,8 @@ public class VideoPlayerTest {
     fakeExoPlayer = mock(ExoPlayer.class);
     fakeEventChannel = mock(EventChannel.class);
     fakeSurfaceTextureEntry = mock(TextureRegistry.SurfaceTextureEntry.class);
+    fakeSurfaceTexture = mock(SurfaceTexture.class);
+    when(fakeSurfaceTextureEntry.surfaceTexture()).thenReturn(fakeSurfaceTexture);
     fakeVideoPlayerOptions = mock(VideoPlayerOptions.class);
     fakeVideoPlayerOptionsWitchCache = mock(VideoPlayerOptions.class);
     fakeVideoPlayerOptionsWitchCache.maxCacheSize = 100L;
@@ -380,5 +388,29 @@ public class VideoPlayerTest {
 
     assertEquals(event2.get("event"), "isPlayingStateUpdate");
     assertEquals(event2.get("isPlaying"), false);
+  }
+
+  @Test
+  public void behindLiveWindowErrorResetsPlayerToDefaultPosition() {
+    List<Player.Listener> listeners = new LinkedList<>();
+    doAnswer(invocation -> listeners.add(invocation.getArgument(0)))
+        .when(fakeExoPlayer)
+        .addListener(any());
+
+    VideoPlayer unused =
+        new VideoPlayer(
+            fakeExoPlayer,
+            fakeEventChannel,
+            fakeSurfaceTextureEntry,
+            fakeVideoPlayerOptions,
+            fakeEventSink,
+            httpDataSourceFactorySpy);
+
+    PlaybackException exception =
+        new PlaybackException(null, null, PlaybackException.ERROR_CODE_BEHIND_LIVE_WINDOW);
+    listeners.forEach(listener -> listener.onPlayerError(exception));
+
+    verify(fakeExoPlayer).seekToDefaultPosition();
+    verify(fakeExoPlayer).prepare();
   }
 }

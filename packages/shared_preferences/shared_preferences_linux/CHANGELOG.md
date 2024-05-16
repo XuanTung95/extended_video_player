@@ -1,3 +1,11 @@
+## NEXT
+
+* Updates minimum supported SDK version to Flutter 3.16/Dart 3.2.
+
+## 2.3.2
+
+* Updates `package:file` version constraints.
+
 ## 2.3.1
 
 * Adds pub topics to package metadata.

@@ -6,9 +6,8 @@ import 'package:pigeon/pigeon.dart';
 
 @ConfigurePigeon(PigeonOptions(
   dartOut: 'lib/src/messages.g.dart',
-  objcOptions: ObjcOptions(prefix: 'FPI'),
-  objcHeaderOut: 'ios/Classes/messages.g.h',
-  objcSourceOut: 'ios/Classes/messages.g.m',
+  swiftOut:
+      'ios/ios_platform_images/Sources/ios_platform_messages/messages.g.swift',
   copyrightHeader: 'pigeons/copyright.txt',
 ))
 
@@ -27,11 +26,9 @@ class PlatformImageData {
 abstract class PlatformImagesApi {
   /// Returns the URL for the given resource, or null if no such resource is
   /// found.
-  @ObjCSelector('resolveURLForResource:withExtension:')
   String? resolveUrl(String resourceName, String? extension);
 
   /// Returns the data for the image resource with the given name, or null if
   /// no such resource is found.
-  @ObjCSelector('loadImageWithName:')
   PlatformImageData? loadImage(String name);
 }

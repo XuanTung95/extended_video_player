@@ -1,6 +1,44 @@
-## 2.6.0
+## 2.7.0
 
 * Adds caching functionality for network video.
+
+## 2.6.1
+
+* Adds files to make include directory permanent.
+
+## 2.6.0
+
+* Adds Swift Package Manager compatibility.
+
+## 2.5.7
+
+* Adds frame availability checks on iOS.
+* Simplifies internal platform channel interfaces.
+* Updates minimum iOS version to 12.0 and minimum Flutter version to 3.16.6.
+
+## 2.5.6
+
+* Adds privacy manifest.
+
+## 2.5.5
+
+* Fixes display of initial frame when paused.
+
+## 2.5.4
+
+* Fixes new lint warnings.
+
+## 2.5.3
+
+* Publishes an instance of the plugin to the registrar on macOS, as on iOS.
+
+## 2.5.2
+
+* Fixes flickering and seek-while-paused on macOS.
+
+## 2.5.1
+
+* Updates to  Pigeon 13.
 
 ## 2.5.0
 

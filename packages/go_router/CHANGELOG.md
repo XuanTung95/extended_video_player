@@ -1,3 +1,101 @@
+## 14.1.1
+
+- Fixes correctness of the state provided in the `onExit`.
+
+## 14.1.0
+
+- Adds route redirect to ShellRoutes
+
+## 14.0.2
+
+- Fixes unwanted logs when `hierarchicalLoggingEnabled` was set to `true`.
+
+## 14.0.1
+
+- Updates the redirection documentation for clarity
+
+## 14.0.0
+
+- **BREAKING CHANGE**
+  - `GoRouteData`'s `onExit` now takes 2 parameters `BuildContext context, GoRouterState state`.
+
+## 13.2.4
+
+- Updates examples to use uri.path instead of uri.toString() for accessing the current location.
+
+## 13.2.3
+
+- Fixes an issue where deep links without path caused an exception
+
+## 13.2.2
+
+- Fixes restoreRouteInformation issue when GoRouter.optionURLReflectsImperativeAPIs is true and the last match is ShellRouteMatch
+
+## 13.2.1
+
+- Updates minimum supported SDK version to Flutter 3.16/Dart 3.2.
+- Fixes memory leaks.
+
+## 13.2.0
+
+- Exposes full `Uri` on `GoRouterState` in `GoRouterRedirect`
+
+## 13.1.0
+
+- Adds `topRoute` to `GoRouterState`
+- Adds `lastOrNull` to `RouteMatchList`
+
+## 13.0.1
+
+- Fixes new lint warnings.
+
+## 13.0.0
+
+- Refactors `RouteMatchList` and imperative APIs.
+- **BREAKING CHANGE**:
+  - RouteMatchList structure changed.
+  - Matching logic updated.
+
+## 12.1.3
+
+- Fixes a typo in `navigation.md`.
+
+## 12.1.2
+
+- Fixes an incorrect use of `extends` for Dart 3 compatibility.
+- Updates minimum supported SDK version to Flutter 3.10/Dart 3.0.
+
+## 12.1.1
+
+- Retains query parameters during refresh and first redirect.
+
+## 12.1.0
+
+- Adds an ability to add a custom codec for serializing/deserializing extra.
+
+## 12.0.3
+
+- Fixes crashes when dynamically updates routing tables with named routes.
+
+## 12.0.2
+
+- Fixes the problem that pathParameters is null in redirect when the Router is recreated.
+
+## 12.0.1
+
+- Fixes deep-link with no path on cold start.
+
+## 12.0.0
+
+- Adds ability to dynamically update routing table.
+- **BREAKING CHANGE**:
+  - The function signature of constructor of `RouteConfiguration` is updated.
+  - Adds a required `matchedPath` named parameter to `RouteMatch.match`.
+
+## 11.1.4
+
+- Fixes missing parameters in the type-safe routes topic documentation.
+
 ## 11.1.3
 
 - Fixes missing state.extra in onException().
@@ -40,11 +138,11 @@
 
 ## 10.1.2
 
-* Adds pub topics to package metadata.
+- Adds pub topics to package metadata.
 
 ## 10.1.1
 
-- Fixes mapping from `Page` to `RouteMatch`s. 
+- Fixes mapping from `Page` to `RouteMatch`s.
 - Updates minimum supported SDK version to Flutter 3.7/Dart 2.19.
 
 ## 10.1.0
@@ -371,7 +469,7 @@
 
 - Fixes a bug where intermediate route redirect methods are not called.
 - GoRouter implements the RouterConfig interface, allowing you to call
-  MaterialApp.router(routerConfig: _myGoRouter) instead of passing
+  MaterialApp.router(routerConfig: \_myGoRouter) instead of passing
   the RouterDelegate, RouteInformationParser, and RouteInformationProvider
   fields.
 - **BREAKING CHANGE**
