@@ -304,8 +304,8 @@ class _BumbleBeeRemoteCacheVideoState
       videoPlayerOptions: VideoPlayerOptions(
           mixWithOthers: true,
           enableCache: true,
-          maxCacheSize: 1600,
-          maxFileSize: 600),
+          maxCacheSize: 1024 * 1024 * 1024,
+          maxFileSize: 200 * 1024 * 1024),
     );
 
     _controller.addListener(() {
