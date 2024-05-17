@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'package:extended_video_player_platform_interface/video_player_platform_interface.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:video_player_platform_interface/video_player_platform_interface.dart';
 
 void main() {
   // Store the initial instance before any tests change it.
