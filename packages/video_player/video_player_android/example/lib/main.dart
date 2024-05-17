@@ -4,8 +4,8 @@
 
 // ignore_for_file: public_member_api_docs
 
+import 'package:extended_video_player_platform_interface/video_player_platform_interface.dart';
 import 'package:flutter/material.dart';
-import 'package:video_player_platform_interface/video_player_platform_interface.dart';
 
 import 'mini_controller.dart';
 

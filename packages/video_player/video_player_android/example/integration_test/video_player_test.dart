@@ -6,18 +6,18 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:extended_video_player_android/video_player_android.dart';
+import 'package:extended_video_player_platform_interface/video_player_platform_interface.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:video_player_android/video_player_android.dart';
 // TODO(stuartmorgan): Remove the use of MiniController in tests, as that is
 // testing test code; tests should instead be written directly against the
 // platform interface. (These tests were copied from the app-facing package
 // during federation and minimally modified, which is why they currently use the
 // controller.)
 import 'package:video_player_example/mini_controller.dart';
-import 'package:video_player_platform_interface/video_player_platform_interface.dart';
 
 const Duration _playDuration = Duration(seconds: 1);
 

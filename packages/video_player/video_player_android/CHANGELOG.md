@@ -2,12 +2,9 @@
 
 * Updates minimum supported SDK version to Flutter 3.16/Dart 3.2.
 
-## 2.5.0
-
-* Adds caching functionality for network video.
-
 ## 2.4.14
 
+* [New] Adds caching functionality for network video.
 * Calls `onDestroy` instead of `initialize` in onDetachedFromEngine.
 
 ## 2.4.13
