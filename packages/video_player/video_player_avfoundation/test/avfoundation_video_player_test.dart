@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'package:extended_video_player_avfoundation/src/messages.g.dart';
+import 'package:extended_video_player_avfoundation/video_player_avfoundation.dart';
+import 'package:extended_video_player_platform_interface/video_player_platform_interface.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:video_player_avfoundation/src/messages.g.dart';
-import 'package:video_player_avfoundation/video_player_avfoundation.dart';
-import 'package:video_player_platform_interface/video_player_platform_interface.dart';
 
 import 'test_api.g.dart';
 
@@ -193,12 +193,12 @@ void main() {
           VideoPlayerParameters(
               videoPlayerOptions: VideoPlayerOptions(enableCache: true)));
       expect(log.log.last, 'create');
-      expect(log.createMessage?.asset, null);
-      expect(log.createMessage?.uri, 'someUri');
-      expect(log.createMessage?.enableCache, true);
-      expect(log.createMessage?.packageName, null);
-      expect(log.createMessage?.formatHint, null);
-      expect(log.createMessage?.httpHeaders,
+      expect(log.creationOptions?.asset, null);
+      expect(log.creationOptions?.uri, 'someUri');
+      expect(log.creationOptions?.enableCache, true);
+      expect(log.creationOptions?.packageName, null);
+      expect(log.creationOptions?.formatHint, null);
+      expect(log.creationOptions?.httpHeaders,
           <String, String>{'Authorization': 'Bearer token'});
       expect(textureId, 3);
     });

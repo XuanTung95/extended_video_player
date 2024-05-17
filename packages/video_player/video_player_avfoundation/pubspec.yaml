@@ -1,8 +1,8 @@
-name: video_player_avfoundation
+name: extended_video_player_avfoundation
 description: iOS and macOS implementation of the video_player plugin.
-repository: https://github.com/flutter/packages/tree/main/packages/video_player/video_player_avfoundation
-issue_tracker: https://github.com/flutter/flutter/issues?q=is%3Aissue+is%3Aopen+label%3A%22p%3A+video_player%22
-version: 2.6.0
+repository: https://github.com/XuanTung95/packages/tree/main/packages/video_player/video_player_avfoundation
+issue_tracker: https://github.com/XuanTung95/packages/issues?q=is%3Aissue+is%3Aopen+label%3A%22p%3A+video_player%22
+version: 2.6.1
 
 environment:
   sdk: ^3.2.3
@@ -10,7 +10,7 @@ environment:
 
 flutter:
   plugin:
-    implements: video_player
+    implements: extended_video_player
     platforms:
       ios:
         dartPluginClass: AVFoundationVideoPlayer
@@ -22,9 +22,9 @@ flutter:
         sharedDarwinSource: true
 
 dependencies:
+  extended_video_player_platform_interface: ">=6.1.0 <7.0.0"
   flutter:
     sdk: flutter
-  video_player_platform_interface: ">=6.1.0 <7.0.0"
 
 dev_dependencies:
   flutter_test:
@@ -33,8 +33,8 @@ dev_dependencies:
 
 # FOR TESTING AND INITIAL REVIEW ONLY. DO NOT MERGE.
 # See https://github.com/flutter/flutter/wiki/Contributing-to-Plugins-and-Packages#changing-federated-plugins
-dependency_overrides:
-   {video_player_platform_interface: {path: ../../video_player/video_player_platform_interface}}
+# dependency_overrides:
+#    {video_player_platform_interface: {path: ../../video_player/video_player_platform_interface}}
 topics:
   - video
   - video-player

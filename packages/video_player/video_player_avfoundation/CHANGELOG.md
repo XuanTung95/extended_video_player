@@ -1,9 +1,6 @@
-## 2.7.0
-
-* Adds caching functionality for network video.
-
 ## 2.6.1
 
+* [New] Adds caching functionality for network video.
 * Adds files to make include directory permanent.
 
 ## 2.6.0
