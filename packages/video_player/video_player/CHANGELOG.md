@@ -2,12 +2,9 @@
 
 * Updates minimum supported SDK version to Flutter 3.16/Dart 3.2.
 
-## 2.9.0
-
-* Adds caching functionality for network video.
-
 ## 2.8.6
 
+* [New] Adds caching functionality for network video.
 * Updates minimum iOS implementation version to include a privacy manifest.
 * Updates minimum supported SDK version to Flutter 3.16.6/Dart 3.2.3.
 

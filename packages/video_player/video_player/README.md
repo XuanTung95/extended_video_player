@@ -2,6 +2,12 @@
 
 # Video Player plugin for Flutter
 
+## Backstory
+
+[TimHoogstrate](https://github.com/TimHoogstrate/package_video_player_cache) added the caching feature and created a [pull request](https://github.com/flutter/packages/pull/4526) for the video_player plugin. 
+However, the PR hasn't been merged after a very long time. After testing, I found that the caching feature is still working, so
+I decided to create a fork and publish it as a plugin so folks can try it and give feedback.
+
 [![pub package](https://img.shields.io/pub/v/video_player.svg)](https://pub.dev/packages/video_player)
 
 A Flutter plugin for iOS, Android and Web for playing back video on a Widget surface.
@@ -14,7 +20,7 @@ A Flutter plugin for iOS, Android and Web for playing back video on a Widget sur
 
 ## Installation
 
-First, add `video_player` as a [dependency in your pubspec.yaml file](https://flutter.dev/using-packages/).
+First, add `extended_video_player` as a [dependency in your pubspec.yaml file](https://flutter.dev/using-packages/).
 
 ### iOS
 
@@ -61,7 +67,7 @@ The `VideoPlayerOptions.mixWithOthers` option can't be implemented in web, at le
 <?code-excerpt "basic.dart (basic-example)"?>
 ```dart
 import 'package:flutter/material.dart';
-import 'package:video_player/video_player.dart';
+import 'package:extended_video_player/video_player.dart';
 
 void main() => runApp(const VideoApp());
 
@@ -80,7 +86,11 @@ class _VideoAppState extends State<VideoApp> {
   void initState() {
     super.initState();
     _controller = VideoPlayerController.networkUrl(Uri.parse(
-        'https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4'))
+        'https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4'),
+        videoPlayerOptions: VideoPlayerOptions(
+                enableCache: true,
+                maxCacheSize: 1024 * 1024 * 1024,
+                maxFileSize: 200 * 1024 * 1024),)
       ..initialize().then((_) {
         // Ensure the first frame is shown after the video is initialized, even before the play button has been pressed.
         setState(() {});

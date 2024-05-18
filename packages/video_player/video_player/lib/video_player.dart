@@ -6,14 +6,14 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:math' as math;
 
+import 'package:extended_video_player_platform_interface/video_player_platform_interface.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:video_player_platform_interface/video_player_platform_interface.dart';
 
 import 'src/closed_caption_file.dart';
 
-export 'package:video_player_platform_interface/video_player_platform_interface.dart'
+export 'package:extended_video_player_platform_interface/video_player_platform_interface.dart'
     show DataSourceType, DurationRange, VideoFormat, VideoPlayerOptions;
 
 export 'src/closed_caption_file.dart';
