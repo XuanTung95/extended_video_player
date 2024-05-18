@@ -5,9 +5,9 @@
 import 'dart:async';
 import 'dart:ui_web' as ui_web;
 
+import 'package:extended_video_player_platform_interface/video_player_platform_interface.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_web_plugins/flutter_web_plugins.dart';
-import 'package:video_player_platform_interface/video_player_platform_interface.dart';
 import 'package:web/web.dart' as web;
 
 import 'src/video_player.dart';
@@ -89,6 +89,12 @@ class VideoPlayerPlugin extends VideoPlayerPlatform {
     _videoPlayers[textureId] = player;
 
     return textureId;
+  }
+
+  @override
+  Future<int?> createWithParameters(
+      DataSource dataSource, VideoPlayerParameters? videoPlayerParameters) {
+    return create(dataSource);
   }
 
   @override

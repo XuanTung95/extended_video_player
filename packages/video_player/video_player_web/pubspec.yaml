@@ -1,7 +1,7 @@
-name: video_player_web
+name: extended_video_player_web
 description: Web platform implementation of video_player.
-repository: https://github.com/flutter/packages/tree/main/packages/video_player/video_player_web
-issue_tracker: https://github.com/flutter/flutter/issues?q=is%3Aissue+is%3Aopen+label%3A%22p%3A+video_player%22
+repository: https://github.com/XuanTung95/packages/tree/main/packages/video_player/video_player_web
+issue_tracker: https://github.com/XuanTung95/packages/issues?q=is%3Aissue+is%3Aopen+label%3A%22p%3A+video_player%22
 version: 2.3.0
 
 environment:
@@ -10,18 +10,18 @@ environment:
 
 flutter:
   plugin:
-    implements: video_player
+    implements: extended_video_player
     platforms:
       web:
         pluginClass: VideoPlayerPlugin
-        fileName: video_player_web.dart
+        fileName: extended_video_player_web.dart
 
 dependencies:
+  extended_video_player_platform_interface: ">=6.1.0 <7.0.0"
   flutter:
     sdk: flutter
   flutter_web_plugins:
     sdk: flutter
-  video_player_platform_interface: ^6.2.0
   web: ^0.5.1
 
 dev_dependencies:
@@ -30,8 +30,8 @@ dev_dependencies:
 
 # FOR TESTING AND INITIAL REVIEW ONLY. DO NOT MERGE.
 # See https://github.com/flutter/flutter/wiki/Contributing-to-Plugins-and-Packages#changing-federated-plugins
-dependency_overrides:
-   {video_player_platform_interface: {path: ../../video_player/video_player_platform_interface}}
+# dependency_overrides:
+#    {video_player_platform_interface: {path: ../../video_player/video_player_platform_interface}}
 topics:
   - video
   - video-player

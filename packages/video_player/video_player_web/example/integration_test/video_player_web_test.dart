@@ -4,12 +4,12 @@
 
 import 'dart:async';
 
+import 'package:extended_video_player_platform_interface/video_player_platform_interface.dart';
+import 'package:extended_video_player_web/video_player_web.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
-import 'package:video_player_platform_interface/video_player_platform_interface.dart';
-import 'package:video_player_web/video_player_web.dart';
 
 import 'utils.dart';
 
